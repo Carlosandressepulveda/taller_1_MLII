@@ -1,100 +1,77 @@
-import numpy as np
+Parámetros:
+-----------
+num_componentes : int
+    Número de componentes principales a calcular.
 
-class MyPCA:
+Atributos:
+-----------
+mis_componentes_ : similar a un array, forma (num_componentes, num_caracteristicas)
+    Componentes principales.
+
+mi_varianza_explicada_ : similar a un array, forma (num_componentes,)
+    Cantidad de varianza explicada por cada uno de los componentes seleccionados.
+
+mi_proporcion_varianza_explicada_ : similar a un array, forma (num_componentes,)
+    Porcentaje de varianza explicada por cada uno de los componentes seleccionados.
+
+mi_media_ : similar a un array, forma (num_caracteristicas,)
+    Media de cada característica en los datos originales.
+
+Métodos:
+--------
+ajustar_transformar(X): Calcula el PCA de una matriz dada X y devuelve sus valores singulares, vectores singulares izquierdos y derechos.
+ajustar_transformar_truncado(X): Calcula el PCA truncado de una matriz dada X y devuelve sus valores singulares, vectores singulares izquierdos y derechos.
+"""
+
+def __init__(self, num_componentes=None):
+    self.num_componentes = num_componentes
+    self.mis_componentes_ = None
+    self.mi_varianza_explicada_ = None
+    self.mi_proporcion_varianza_explicada_ = None
+    self.mi_media_ = None
+
+def ajustar(self, X):
     """
-    Principal Component Analysis (PCA)
-    
-    Parameters:
+    Ajusta el modelo de PCA a los datos dados.
+
+    Parámetros:
     -----------
-    num_components : int
-        Number of principal components to compute.
-        
-    Attributes:
-    -----------
-    my_components_ : array-like, shape (num_components, num_features)
-        Principal components.
-        
-    my_explained_variance_ : array-like, shape (num_components,)
-        Amount of variance explained by each of the selected components.
-        
-    my_explained_variance_ratio_ : array-like, shape (num_components,)
-        Percentage of variance explained by each of the selected components.
-        
-    my_mean_ : array-like, shape (num_features,)
-        Mean of each feature in the original data.
-    Methods:
-    --------
-        fit_transform(X): Computes the PCA of a given matrix X and returns its singular values, left and right singular vectors.
-        fit_transform_truncated(X): Computes the truncated PCA of a given matrix X and returns its singular values, left and right singular vectors.
+    X : similar a un array, forma (n_muestras, n_caracteristicas)
+        Datos de entrenamiento.
     """
-    
-    def __init__(self, num_components=None):
-        self.num_components = num_components
-        self.my_components_ = None
-        self.my_explained_variance_ = None
-        self.my_explained_variance_ratio_ = None
-        self.my_mean_ = None
-        
-    def fit(self, X):
-        """
-        Fit the PCA model to the given data.
-        
-        Parameters:
-        -----------
-        X : array-like, shape (n_samples, n_features)
-            Training data.
-        """
-        # Compute the mean of each feature
-        self.my_mean_ = np.mean(X, axis=0)
-        
-        # Center the data by subtracting the mean
-        X_centered = X - self.my_mean_
-        
-        # Compute the covariance matrix
-        cov = np.cov(X_centered.T)
-        
-        # Compute the eigenvectors and eigenvalues of the covariance matrix
-        eigvals, eigvecs = np.linalg.eig(cov)
-        
-        # Sort the eigenvectors and eigenvalues in descending order of eigenvalue
-        eigvecs = eigvecs.T
-        idxs = np.argsort(eigvals)[::-1]
-        eigvecs = eigvecs[idxs]
-        eigvals = eigvals[idxs]
-        
-        # Normalize the eigenvectors
-        norm = np.sqrt(np.sum(np.power(eigvecs, 2), axis=1))
-        eigvecs /= norm.reshape(-1, 1)
-        
-        # Store the first num_components eigenvectors
-        if self.num_components is not None:
-            self.my_components_ = eigvecs[:self.num_components]
-            self.my_explained_variance_ = eigvals[:self.num_components]
-        else:
-            self.my_components_ = eigvecs
-            self.my_explained_variance_ = eigvals
-        
-        # Compute the percentage of variance explained by each component
-        self.my_explained_variance_ratio_ = self.my_explained_variance_ / np.sum(self.my_explained_variance_)
-        
-    def transform(self, X):
-        """
-        Transform the given data into the principal component space.
-        
-        Parameters:
-        -----------
-        X : array-like, shape (n_samples, n_features)
-            Data to transform.
-        
-        Returns:
-        --------
-        X_transformed : array-like, shape (n_samples, num_components)
-            Transformed data.
-        """
-        # Center the data by subtracting the mean
-        X_centered = X - self.my_mean_
-        
-        # Project the data onto the principal components
-        X_transformed = np.dot(X_centered, self.my_components_.T)
-        
-        return X
+    # Calcula la media de cada característica
+    self.mi_media_ = np.mean(X, axis=0)
+
+    # Centra los datos restando la media
+    X_centralizado = X - self.mi_media_
+
+    # Calcula la matriz de covarianza
+    cov = np.cov(X_centralizado.T)
+
+    # Calcula los vectores y valores propios de la matriz de covarianza
+    eigvals, eigvecs = np.linalg.eig(cov)
+
+    # Ordena los vectores y valores propios en orden descendente de valor propio
+    eigvecs = eigvecs.T
+    idxs = np.argsort(eigvals)[::-1]
+    eigvecs = eigvecs[idxs]
+    eigvals = eigvals[idxs]
+
+    # Normaliza los vectores propios
+    norma = np.sqrt(np.sum(np.power(eigvecs, 2), axis=1))
+    eigvecs /= norma.reshape(-1, 1)
+
+    # Almacena los primeros num_componentes vectores propios
+    if self.num_componentes is not None:
+        self.mis_componentes_ = eigvecs[:self.num_componentes]
+        self.mi_varianza_explicada_ = eigvals[:self.num_componentes]
+    else:
+        self.mis_componentes_ = eigvecs
+        self.mi_varianza_explicada_ = eigvals
+
+    # Calcula el porcentaje de varianza explicada por cada componente
+    self.mi_proporcion_varianza_explicada_ = self.mi_varianza_explicada_ / np.sum(self.mi_varianza_explicada_)
+
+def transformar(self, X):
+    """
+
