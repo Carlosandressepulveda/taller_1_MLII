@@ -1,0 +1,31 @@
+from sklearn.linear_model import LogisticRegression
+from sklearn.datasets import fetch_openml
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Obtener el conjunto de datos MNIST
+conjunto_datos = fetch_openml('mnist_784')
+
+# Preparar los datos para el entrenamiento
+X = conjunto_datos.data
+y = conjunto_datos.target
+X_entrenamiento, X_prueba, y_entrenamiento, y_prueba = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Escalar las características de entrada
+escalador = StandardScaler()
+X_entrenamiento = escalador.fit_transform(X_entrenamiento)
+X_prueba = escalador.transform(X_prueba)
+
+# Seleccionar solo las muestras correspondientes a los dígitos 0 y 8
+X_entrenamiento_08 = X_entrenamiento[(y_entrenamiento == '0') | (y_entrenamiento == '8')]
+y_entrenamiento_08 = y_entrenamiento[(y_entrenamiento == '0') | (y_entrenamiento == '8')]
+X_prueba_08 = X_prueba[(y_prueba == '0') | (y_prueba == '8')]
+y_prueba_08 = y_prueba[(y_prueba == '0') | (y_prueba == '8')]
+
+# Crear y entrenar el modelo de regresión logística
+modelo = LogisticRegression(random_state=42, max_iter=1000)
+modelo.fit(X_entrenamiento_08, y_entrenamiento_08)
+
+# Evaluar el rendimiento del modelo en los datos de prueba
+exactitud = modelo.score(X_prueba_08, y_prueba_08)
+print(f"La exactitud del modelo es: {exactitud:.2f}")
